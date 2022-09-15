@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "marlabs-cov-rep-adf"
+		},
+		"ls_ablob_covidreportingsa_connectionString": {
+			"value": ""
+		},
+		"ls_adls_covidreportingdl_accountKey": {
+			"value": ""
+		},
+		"ls_adls_covidreportingdl_properties_typeProperties_url": {
+			"value": "https://covrepdl1.dfs.core.windows.net/"
+		},
+		"ls_adls_covidreportingdl_connectionString": {
+			"value": ""
+		},
+		"ls_http_opendata_ecdc_covid_eu_properties_typeProperties_url": {
+			"value": "@{linkedService().source_base_url}"
+		},
+		"trigger_ingest_ecdc_covid_data_properties_pipeline_ingest_ecdc_covid_data_parameters_source_relative_url": {
+			"value": "pamuba/covid19/blob/main/raw/main/ecdc_data/hospital_admissions.csv"
+		},
+		"trigger_ingest_ecdc_covid_data_properties_pipeline_ingest_ecdc_covid_data_parameters_sink_file_name": {
+			"value": "hospital_admissions.csv"
+		},
+		"trigger_ingest_population_data_properties_typeProperties_scope": {
+			"value": "/subscriptions/4e65052c-6db5-4652-9ffa-b96f17e0c034/resourceGroups/cov-rep/providers/Microsoft.Storage/storageAccounts/covrepblob"
+		}
+	}
+}
