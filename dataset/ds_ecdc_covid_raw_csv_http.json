@@ -3,10 +3,19 @@
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ls_http_opendata_ecdc_covid_eu",
-			"type": "LinkedServiceReference"
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"source_base_url": {
+					"value": "@dataset().source_base_url",
+					"type": "Expression"
+				}
+			}
 		},
 		"parameters": {
 			"relative_url": {
+				"type": "string"
+			},
+			"source_base_url": {
 				"type": "string"
 			}
 		},
