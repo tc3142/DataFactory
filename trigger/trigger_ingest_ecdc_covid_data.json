@@ -1,0 +1,28 @@
+{
+	"name": "trigger_ingest_ecdc_covid_data",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "pipeline_ingest_ecdc_covid_data",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"source_relative_url": "pamuba/covid19/blob/main/raw/main/ecdc_data/hospital_admissions.csv",
+					"sink_file_name": "hospital_admissions.csv"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2022-09-14T07:10:00Z",
+				"timeZone": "UTC"
+			}
+		}
+	}
+}

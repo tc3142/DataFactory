@@ -1,0 +1,9 @@
+{
+	"name": "marlabs-cov-rep-adf",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "8b9766d1-cd69-4e59-b869-35be139acc74",
+		"tenantId": "79740244-5db7-4335-bad9-9f24a16a0f42"
+	}
+}
