@@ -1,13 +1,18 @@
 {
 	"name": "ls_http_opendata_ecdc_covid_eu",
-	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
+		"parameters": {
+			"source_base_url": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "HttpServer",
 		"typeProperties": {
-			"url": "https://github.com",
+			"url": "@{linkedService().source_base_url}",
 			"enableServerCertificateValidation": true,
 			"authenticationType": "Anonymous"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
 }
