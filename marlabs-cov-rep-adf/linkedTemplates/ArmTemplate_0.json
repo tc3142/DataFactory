@@ -27,14 +27,6 @@
 			"type": "string",
 			"defaultValue": "@{linkedService().source_base_url}"
 		},
-		"trigger_ingest_ecdc_covid_data_properties_pipeline_ingest_ecdc_covid_data_parameters_source_relative_url": {
-			"type": "string",
-			"defaultValue": "pamuba/covid19/blob/main/raw/main/ecdc_data/hospital_admissions.csv"
-		},
-		"trigger_ingest_ecdc_covid_data_properties_pipeline_ingest_ecdc_covid_data_parameters_sink_file_name": {
-			"type": "string",
-			"defaultValue": "hospital_admissions.csv"
-		},
 		"trigger_ingest_population_data_properties_typeProperties_scope": {
 			"type": "string",
 			"defaultValue": "/subscriptions/4e65052c-6db5-4652-9ffa-b96f17e0c034/resourceGroups/cov-rep/providers/Microsoft.Storage/storageAccounts/covrepblob"
@@ -190,7 +182,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobStorageLocation",
-						"fileName": "ecdc_file_list.json",
+						"fileName": "ecdc_file_list1.json",
 						"container": "configs"
 					}
 				},
@@ -265,11 +257,11 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Copy ecdc data",
-						"type": "Copy",
+						"name": "ecdc_file_lookup",
+						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
-							"timeout": "0.00:05:00",
+							"timeout": "0.12:00:00",
 							"retry": 0,
 							"retryIntervalInSeconds": 30,
 							"secureOutput": false,
@@ -278,85 +270,128 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
-								"type": "DelimitedTextSource",
+								"type": "JsonSource",
 								"storeSettings": {
-									"type": "HttpReadSettings",
-									"requestMethod": "GET"
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
 								},
 								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
+									"type": "JsonReadSettings"
 								}
 							},
-							"sink": {
-								"type": "DelimitedTextSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "DelimitedTextWriteSettings",
-									"quoteAllText": true,
-									"fileExtension": ".txt"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_ecdc_covid_raw_csv_http",
+							"dataset": {
+								"referenceName": "ds_ecdc_file_list",
 								"type": "DatasetReference",
-								"parameters": {
-									"relative_url": {
-										"value": "@pipeline().parameters.source_relative_url",
-										"type": "Expression"
-									},
-									"source_base_url": {
-										"value": "@pipeline().parameters.source_base_url",
-										"type": "Expression"
-									}
-								}
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "execute copy for every record",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "ecdc_file_lookup",
+								"dependencyConditions": [
+									"Succeeded"
+								]
 							}
 						],
-						"outputs": [
-							{
-								"referenceName": "ds_ecdc_covid_raw_csv_dl",
-								"type": "DatasetReference",
-								"parameters": {
-									"file_name": {
-										"value": "@pipeline().parameters.sink_file_name",
-										"type": "Expression"
-									}
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('ecdc_file_lookup').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy ecdc data",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.00:05:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "HttpReadSettings",
+												"requestMethod": "GET"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_ecdc_covid_raw_csv_http",
+											"type": "DatasetReference",
+											"parameters": {
+												"relative_url": {
+													"value": "@item().source_relative_url",
+													"type": "Expression"
+												},
+												"source_base_url": {
+													"value": "@item().source_base_url",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_ecdc_covid_raw_csv_dl",
+											"type": "DatasetReference",
+											"parameters": {
+												"file_name": {
+													"value": "@item().sink_file_name",
+													"type": "Expression"
+												}
+											}
+										}
+									]
 								}
-							}
-						]
+							]
+						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
-				"parameters": {
-					"source_relative_url": {
-						"type": "string"
-					},
-					"sink_file_name": {
-						"type": "string"
-					},
-					"source_base_url": {
-						"type": "string"
-					}
-				},
 				"annotations": [],
 				"lastPublishTime": "2022-09-14T22:55:14Z"
 			},
 			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_ecdc_file_list')]",
 				"[concat(variables('factoryId'), '/datasets/ds_ecdc_covid_raw_csv_http')]",
 				"[concat(variables('factoryId'), '/datasets/ds_ecdc_covid_raw_csv_dl')]"
 			]
@@ -673,10 +708,7 @@
 							"referenceName": "pipeline_ingest_ecdc_covid_data",
 							"type": "PipelineReference"
 						},
-						"parameters": {
-							"source_relative_url": "[parameters('trigger_ingest_ecdc_covid_data_properties_pipeline_ingest_ecdc_covid_data_parameters_source_relative_url')]",
-							"sink_file_name": "[parameters('trigger_ingest_ecdc_covid_data_properties_pipeline_ingest_ecdc_covid_data_parameters_sink_file_name')]"
-						}
+						"parameters": {}
 					}
 				],
 				"type": "ScheduleTrigger",
