@@ -1,0 +1,40 @@
+{
+	"name": "df_transform_cases_deaths",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_cases_deaths_raw",
+						"type": "DatasetReference"
+					},
+					"name": "casesAndDeaths"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "filterEuropeOnly"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          country as string,",
+				"          country_code as string,",
+				"          continent as string,",
+				"          population as integer,",
+				"          indicator as string,",
+				"          daily_count as integer,",
+				"          date as date,",
+				"          rate_14_day as double,",
+				"          source as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> casesAndDeaths",
+				"casesAndDeaths filter(continent=='Europe' && not(isNull(country_code))) ~> filterEuropeOnly"
+			]
+		}
+	}
+}
